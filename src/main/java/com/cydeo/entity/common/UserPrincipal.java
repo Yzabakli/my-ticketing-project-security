@@ -1,12 +1,10 @@
 package com.cydeo.entity.common;
 
 import com.cydeo.entity.User;
-import com.cydeo.repository.UserRepository;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
 
@@ -51,5 +49,9 @@ public class UserPrincipal implements UserDetails {
     @Override
     public boolean isEnabled() {
         return user.isEnabled();
+    }
+
+    public Long getId() {
+        return user.getId();
     }
 }

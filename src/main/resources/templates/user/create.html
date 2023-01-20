@@ -32,7 +32,7 @@
                                 <div class="panel-body">
 
                                     <!-- ------------------------FORM START----------------------------- -->
-                                    <form th:action="@{/user/create}" method="post" th:object="${user}">
+                                    <form th:action="@{/user/create}" method="post" th:object="${newUser}">
                                         <div class="row">
                                             <div class="col-sm-6 col-md-6">
                                                 <div class="form-group">
@@ -209,7 +209,8 @@
                                                 <td th:text="${user.role.description}"></td>
                                                 <td class="actions">
                                                     <a th:href="@{/user/update/{id}(id=${user.userName})}" class="btn btn-warning btn-sm">Update</a>
-                                                    <a th:href="@{/user/delete/{id}(id=${user.userName})}" class="delete-row btn btn-secondary btn-sm">Delete</a>
+                                                    <a th:if="${!isOnlyAdmin || !user.userName.equals(currentUser)}" th:href="@{/user/delete/{id}(id=${user.userName})}" class="delete-row btn btn-secondary btn-sm">Delete</a>
+                                                    <span th:if="${isOnlyAdmin && user.userName.equals(currentUser)}" class="text-danger">Can not delete you are the only admin</span>
                                                 </td>
                                             </tr>
 

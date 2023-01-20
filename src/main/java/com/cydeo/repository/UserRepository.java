@@ -7,6 +7,7 @@ import javax.transaction.Transactional;
 import java.util.List;
 
 public interface UserRepository extends JpaRepository<User,Long> {
+    Integer countByRole_Id(Long id);
 
     List<User> findAllByIsDeletedOrderByFirstNameDesc(Boolean deleted);
 

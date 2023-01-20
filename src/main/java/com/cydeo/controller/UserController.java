@@ -25,9 +25,11 @@ public class UserController {
     @GetMapping("/create")
     public String createUser(Model model){
 
-        model.addAttribute("user", new UserDTO());
+        model.addAttribute("newUser", new UserDTO());
         model.addAttribute("roles", roleService.listAllRoles());
         model.addAttribute("users", userService.listAllUsers());
+        model.addAttribute("isOnlyAdmin", userService.countByRole_Admin() == 1);
+        model.addAttribute("currentUser", userService.getCurrentUser_Username());
 
         return "/user/create";
 
@@ -83,7 +85,14 @@ public class UserController {
     @GetMapping("/delete/{username}")
     public String deleteUser(@PathVariable("username") String username) {
 //        userService.deleteByUserName(username);
+
         userService.delete(username);
+
+        if (userService.getCurrentUser_Username().equals(username)) {
+
+            return "redirect:/logout";
+        }
+
         return "redirect:/user/create";
     }
 

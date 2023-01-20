@@ -9,6 +9,7 @@ import com.cydeo.service.RoleService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,9 +36,6 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public RoleDTO findById(Long id) {
 
-
-
-
-        return roleMapper.convertToDto(roleRepository.findById(id).get());
+        return roleMapper.convertToDto(roleRepository.findById(id).orElseThrow());
     }
 }

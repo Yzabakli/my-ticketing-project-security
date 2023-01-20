@@ -1,19 +1,22 @@
 package com.cydeo.config;
 
+import com.cydeo.service.SecurityService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
-
-import java.util.ArrayList;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 public class SecurityConfig {
 
+    private final SecurityService securityService;
+    private final AuthSuccessHandler authSuccessHandler;
+
+    public SecurityConfig(SecurityService securityService, AuthSuccessHandler authSuccessHandler) {
+        this.securityService = securityService;
+        this.authSuccessHandler = authSuccessHandler;
+    }
 //    @Bean
 //    public UserDetailsService userDetailsService(PasswordEncoder encoder) {
 //
@@ -31,22 +34,55 @@ public class SecurityConfig {
 
         return http.authorizeRequests()
 //                .antMatchers("/user/**").hasRole("ADMIN")
-                .antMatchers("/user/**").hasAuthority("Admin")
-//                .antMatchers("/project/**").hasRole("MANAGER")
-//                .antMatchers("/task/employee/**").hasRole("EMPLOYEE")
-//                .antMatchers("/task/**").hasRole("MANAGER")
+                .antMatchers("/user/**")
+                .hasAuthority("Admin")
+                .antMatchers("/project/**")
+                .hasAuthority("Manager")
+                .antMatchers("/task/employee/**")
+                .hasAuthority("Employee")
+                .antMatchers("/task/**")
+                .hasAuthority("Manager")
 //                .antMatchers("/task/**").hasAnyRole("ADMIN", "EMPLOYEE")
 //                .antMatchers("/task/**").hasAuthority("ROLE_EMPLOYEE")
-                .antMatchers("/", "/login", "/fragments/**", "/assets/**", "/images/**")
+                .antMatchers("/login", "/fragments/**", "/assets/**", "/images/**")
                 .permitAll()
                 .anyRequest()
                 .authenticated()
                 .and()
 //                .httpBasic()
-                .formLogin().loginPage("/login")
+                .formLogin()
+                .loginPage("/login")
                 .defaultSuccessUrl("/welcome")
+                .successHandler(authSuccessHandler)
+//                .successHandler((request, response, authentication) -> {
+//                    Set<String> roles = AuthorityUtils.authorityListToSet(authentication.getAuthorities());
+//
+//                    if (roles.contains("Admin")) {
+//
+//                        response.sendRedirect("/user/create");
+//                    }
+//
+//                    if (roles.contains("Manager")) {
+//
+//                        response.sendRedirect("/project/create");
+//                    }
+//
+//                    if (roles.contains("Employee")) {
+//
+//                        response.sendRedirect("/task/employee");
+//                    }
+//                })
                 .failureUrl("/login?error=true")
                 .permitAll()
+                .and()
+                .logout()
+                .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+                .logoutSuccessUrl("/login")
+                .and()
+                .rememberMe()
+                .tokenValiditySeconds(120)
+                .key("cydeo")
+                .userDetailsService(securityService)
                 .and()
                 .build();
     }

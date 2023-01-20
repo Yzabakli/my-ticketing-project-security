@@ -7,10 +7,12 @@ import com.cydeo.entity.User;
 import com.cydeo.mapper.UserMapper;
 import com.cydeo.repository.UserRepository;
 import com.cydeo.service.ProjectService;
+import com.cydeo.service.SecurityService;
 import com.cydeo.service.TaskService;
 import com.cydeo.service.UserService;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.data.domain.Sort;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,12 +25,16 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final ProjectService projectService;
     private final TaskService taskService;
+    private final SecurityService securityService;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, @Lazy ProjectService projectService, @Lazy TaskService taskService) {
+    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, @Lazy ProjectService projectService, @Lazy TaskService taskService, SecurityService securityService, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.projectService = projectService;
         this.taskService = taskService;
+        this.securityService = securityService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -45,7 +51,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void save(UserDTO user) {
-        userRepository.save(userMapper.convertToEntity(user));
+
+        User convert = userMapper.convertToEntity(user);
+
+        convert.setEnabled(true);
+
+        convert.setPassWord(passwordEncoder.encode(user.getPassWord()));
+
+        userRepository.save(convert);
     }
 
 //    @Override
@@ -87,6 +100,16 @@ public class UserServiceImpl implements UserService {
     public List<UserDTO> listAllByRole(String role) {
         List<User> users = userRepository.findByRoleDescriptionIgnoreCaseAndIsDeleted(role, false);
         return users.stream().map(userMapper::convertToDto).collect(Collectors.toList());
+    }
+
+    @Override
+    public String getCurrentUser_Username() {
+        return SecurityContextHolder.getContext().getAuthentication().getName();
+    }
+
+    @Override
+    public Integer countByRole_Admin() {
+        return userRepository.countByRole_Id(1L);
     }
 
     private boolean checkIfUserCanBeDeleted(User user) {
